@@ -1,0 +1,21 @@
+1. Create a new table with the same structure as the CSV file.
+
+CREATE TABLE temp_doctor_ktp_import (
+    name VARCHAR(255),
+    oldKTP VARCHAR(255),
+    newKTP VARCHAR(255)
+);
+
+2. Directly import the data from the CSV file into the new table
+-- Import data from the CSV file into the new table
+LOAD DATA LOCAL INFILE '/tmp/UpdatedDoctorKTP.csv'
+INTO TABLE temp_doctor_ktp_import
+FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+
+3. Updating the practitioner_identifier_mapping with newKTP where identifier_type_code = 'KTP'
+
+UPDATE practitioner_identifier_mapping AS p
+JOIN temp_doctor_ktp_import AS t ON p.identifier_value = t.oldKTP
+SET p.identifier_value = t.newKTP
+WHERE p.identifier_type_code = 'KTP';
